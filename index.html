@@ -1,1 +1,590 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
 
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="theme-color"
+    content="#ffffff"
+  >
+
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+
+  <meta
+    name="description"
+    content="L専用通信デバイス"
+  >
+
+  <title>L DEVICE</title>
+
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <noscript>
+    <div class="noscript-message">
+      この端末の起動にはJavaScriptが必要です。
+    </div>
+  </noscript>
+
+
+  <!-- 起動画面 -->
+  <div id="bootScreen" class="boot-screen">
+
+    <div class="boot-content">
+
+      <img
+        src="l-logo.png"
+        alt="L"
+        class="boot-logo"
+      >
+
+      <p class="boot-title">
+        PRIVATE COMMUNICATION DEVICE
+      </p>
+
+      <p id="bootMessage" class="boot-message">
+        INITIALIZING...
+      </p>
+
+      <div class="boot-progress">
+        <div
+          id="bootProgressBar"
+          class="boot-progress-bar"
+        ></div>
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- 端末本体 -->
+  <main id="terminal" class="terminal terminal-hidden">
+
+    <header class="terminal-header">
+
+      <div class="terminal-brand">
+
+        <img
+          src="l-logo.png"
+          alt="L"
+          class="header-logo"
+        >
+
+        <div>
+          <p class="brand-title">
+            L DEVICE
+          </p>
+
+          <p class="brand-subtitle">
+            RECEIVE-ONLY COMMUNICATION TERMINAL
+          </p>
+        </div>
+
+      </div>
+
+
+      <div class="connection-status">
+
+        <span
+          id="connectionLamp"
+          class="connection-lamp"
+          aria-hidden="true"
+        ></span>
+
+        <div>
+          <p class="connection-label">
+            CONNECTION
+          </p>
+
+          <p
+            id="connectionText"
+            class="connection-value"
+          >
+            SECURE
+          </p>
+        </div>
+
+      </div>
+
+    </header>
+
+
+    <!-- 現在時刻など -->
+    <section
+      class="system-panel"
+      aria-label="端末情報"
+    >
+
+      <div class="system-item">
+
+        <span class="system-label">
+          CURRENT TIME
+        </span>
+
+        <time
+          id="currentTime"
+          class="system-value"
+        >
+          --:--:--
+        </time>
+
+      </div>
+
+
+      <div class="system-item">
+
+        <span class="system-label">
+          CURRENT DATE
+        </span>
+
+        <time
+          id="currentDate"
+          class="system-value"
+        >
+          ---- / -- / --
+        </time>
+
+      </div>
+
+
+      <div class="system-item">
+
+        <span class="system-label">
+          SESSION
+        </span>
+
+        <span
+          id="sessionTime"
+          class="system-value"
+        >
+          00:00:00
+        </span>
+
+      </div>
+
+
+      <div class="system-item">
+
+        <span class="system-label">
+          RECEIVED
+        </span>
+
+        <span
+          id="receivedCount"
+          class="system-value"
+        >
+          0
+        </span>
+
+      </div>
+
+    </section>
+
+
+    <!-- 通信ログ -->
+    <section class="communication-panel">
+
+      <div class="section-heading">
+
+        <div>
+          <p class="section-code">
+            CHANNEL 01
+          </p>
+
+          <h1 class="section-title">
+            COMMUNICATION LOG
+          </h1>
+        </div>
+
+        <span
+          id="onlineIndicator"
+          class="online-indicator"
+        >
+          ONLINE
+        </span>
+
+      </div>
+
+
+      <div
+        id="messageLog"
+        class="message-log"
+        aria-live="polite"
+        aria-label="受信した通信"
+      >
+
+        <article class="message system-message">
+
+          <div class="message-header">
+
+            <time class="message-time">
+              SYSTEM
+            </time>
+
+            <span class="message-sender">
+              TERMINAL
+            </span>
+
+          </div>
+
+          <p class="message-text">
+            暗号化通信路を確立しています。
+          </p>
+
+        </article>
+
+      </div>
+
+
+      <div
+        id="typingIndicator"
+        class="typing-indicator hidden"
+      >
+
+        <div class="typing-dots">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+
+        <p>
+          通信を受信しています
+        </p>
+
+      </div>
+
+    </section>
+
+
+    <!-- 集中タイマー -->
+    <section class="appointment-panel">
+
+      <div class="section-heading">
+
+        <div>
+          <p class="section-code">
+            APPOINTMENT SYSTEM
+          </p>
+
+          <h2 class="section-title">
+            NEXT COMMUNICATION
+          </h2>
+        </div>
+
+      </div>
+
+
+      <p class="appointment-description">
+        次の通信までの時間を設定します。
+        約束の時刻になったら私から接続します。
+      </p>
+
+
+      <div class="preset-buttons">
+
+        <button
+          type="button"
+          class="time-button"
+          data-minutes="5"
+        >
+          <span class="time-number">05</span>
+          <span class="time-unit">MIN</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="time-button"
+          data-minutes="15"
+        >
+          <span class="time-number">15</span>
+          <span class="time-unit">MIN</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="time-button"
+          data-minutes="25"
+        >
+          <span class="time-number">25</span>
+          <span class="time-unit">MIN</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="time-button"
+          data-minutes="45"
+        >
+          <span class="time-number">45</span>
+          <span class="time-unit">MIN</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="time-button"
+          data-minutes="60"
+        >
+          <span class="time-number">60</span>
+          <span class="time-unit">MIN</span>
+        </button>
+
+      </div>
+
+
+      <!-- 自由入力 -->
+      <div class="custom-timer">
+
+        <label
+          for="customMinutes"
+          class="custom-label"
+        >
+          CUSTOM
+        </label>
+
+        <div class="custom-controls">
+
+          <input
+            id="customMinutes"
+            class="custom-input"
+            type="number"
+            min="1"
+            max="180"
+            step="1"
+            inputmode="numeric"
+            placeholder="30"
+          >
+
+          <span class="custom-unit">
+            MIN
+          </span>
+
+          <button
+            id="customStartButton"
+            type="button"
+            class="custom-start-button"
+          >
+            SET
+          </button>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- タイマー作動中 -->
+    <section
+      id="activeTimerPanel"
+      class="active-timer-panel hidden"
+    >
+
+      <div class="active-timer-information">
+
+        <p class="active-timer-label">
+          NEXT CONNECTION
+        </p>
+
+        <p
+          id="remainingTime"
+          class="remaining-time"
+        >
+          00:00
+        </p>
+
+        <p
+          id="timerEndTime"
+          class="timer-end-time"
+        >
+          接続予定時刻 --:--
+        </p>
+
+      </div>
+
+
+      <div class="timer-progress-track">
+
+        <div
+          id="timerProgressBar"
+          class="timer-progress-bar"
+        ></div>
+
+      </div>
+
+
+      <div class="timer-actions">
+
+        <button
+          id="pauseTimerButton"
+          type="button"
+          class="timer-action-button"
+        >
+          PAUSE
+        </button>
+
+        <button
+          id="cancelTimerButton"
+          type="button"
+          class="timer-action-button cancel-button"
+        >
+          CANCEL
+        </button>
+
+      </div>
+
+    </section>
+
+
+    <!-- 利用記録 -->
+    <section class="record-panel">
+
+      <div class="record-item">
+
+        <span class="record-label">
+          TERMINAL ACCESS
+        </span>
+
+        <strong
+          id="accessCount"
+          class="record-value"
+        >
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="record-item">
+
+        <span class="record-label">
+          COMPLETED APPOINTMENTS
+        </span>
+
+        <strong
+          id="completedCount"
+          class="record-value"
+        >
+          0
+        </strong>
+
+      </div>
+
+
+      <div class="record-item">
+
+        <span class="record-label">
+          CONTINUOUS ACCESS
+        </span>
+
+        <strong
+          id="streakCount"
+          class="record-value"
+        >
+          0 DAYS
+        </strong>
+
+      </div>
+
+    </section>
+
+
+    <footer class="terminal-footer">
+
+      <p>
+        ENCRYPTED CONNECTION / RECEIVE ONLY
+      </p>
+
+      <p>
+        SYSTEM VERSION 1.0.0
+      </p>
+
+    </footer>
+
+  </main>
+
+
+  <!-- タイマー終了時の受信画面 -->
+  <div
+    id="incomingOverlay"
+    class="incoming-overlay hidden"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="incomingTitle"
+  >
+
+    <div class="incoming-window">
+
+      <img
+        src="l-logo.png"
+        alt="L"
+        class="incoming-logo"
+      >
+
+      <p class="incoming-label">
+        INCOMING TRANSMISSION
+      </p>
+
+      <h2
+        id="incomingTitle"
+        class="incoming-title"
+      >
+        通信を受信しました
+      </h2>
+
+      <p
+        id="incomingMessage"
+        class="incoming-message"
+      >
+        約束の時間です。
+      </p>
+
+      <button
+        id="openMessageButton"
+        type="button"
+        class="open-message-button"
+      >
+        OPEN MESSAGE
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <!-- 小さな通知表示 -->
+  <div
+    id="notificationToast"
+    class="notification-toast hidden"
+    aria-live="polite"
+  >
+
+    <span
+      class="notification-dot"
+      aria-hidden="true"
+    ></span>
+
+    <p id="notificationText">
+      通信を受信しました。
+    </p>
+
+  </div>
+
+
+  <script src="script.js"></script>
+
+</body>
+</html>
