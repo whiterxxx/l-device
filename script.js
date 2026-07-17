@@ -5,8 +5,57 @@ const STORAGE_KEYS = {
   completedCount: 'lDeviceCompletedCount',
   streak: 'lDeviceStreak',
   lastAccessDate: 'lDeviceLastAccessDate',
-  timerState: 'lDeviceTimerState'
+  timerState: 'lDeviceTimerState',
+  connectionPoints: 'lDeviceConnectionPoints',
+  lastPointDate: 'lDeviceLastPointDate',
+  lastGlitchDate: 'lDeviceLastGlitchDate',
+  glitchRewardClaimed: 'lDeviceGlitchRewardClaimed'
 };
+
+const SETTINGS = {
+  randomTransmissionMinMs: 90000,
+  randomTransmissionMaxMs: 240000,
+  randomTransmissionChance: 0.58,
+  timerTransmissionChance: 0.24,
+  glitchFirstMinMs: 180000,
+  glitchFirstMaxMs: 420000,
+  glitchRetryMinMs: 240000,
+  glitchRetryMaxMs: 480000,
+  glitchChance: 0.45
+};
+
+const CONNECTION_LEVELS = [
+  {
+    level: 1,
+    min: 0,
+    name: 'TEMPORARY LINK'
+  },
+  {
+    level: 2,
+    min: 10,
+    name: 'VERIFIED DEVICE'
+  },
+  {
+    level: 3,
+    min: 25,
+    name: 'SECURE CHANNEL'
+  },
+  {
+    level: 4,
+    min: 50,
+    name: 'PRIVATE LINK'
+  },
+  {
+    level: 5,
+    min: 90,
+    name: 'DEDICATED LINE'
+  },
+  {
+    level: 6,
+    min: 150,
+    name: 'PERMANENT CONNECTION'
+  }
+];
 
 const bootScreen = document.getElementById('bootScreen');
 const bootMessage = document.getElementById('bootMessage');
@@ -21,6 +70,11 @@ const receivedCount = document.getElementById('receivedCount');
 const connectionLamp = document.getElementById('connectionLamp');
 const connectionText = document.getElementById('connectionText');
 const onlineIndicator = document.getElementById('onlineIndicator');
+
+const connectionLevel = document.getElementById('connectionLevel');
+const connectionRank = document.getElementById('connectionRank');
+const connectionPointText = document.getElementById('connectionPointText');
+const connectionLevelBar = document.getElementById('connectionLevelBar');
 
 const messageLog = document.getElementById('messageLog');
 const typingIndicator = document.getElementById('typingIndicator');
@@ -47,16 +101,24 @@ const openMessageButton = document.getElementById('openMessageButton');
 const notificationToast = document.getElementById('notificationToast');
 const notificationText = document.getElementById('notificationText');
 
+const signalGlitch = document.getElementById('signalGlitch');
+const signalGlitchText = document.getElementById('signalGlitchText');
+
 const sessionStartedAt = Date.now();
 
 let sessionReceived = 0;
 let clockIntervalId = null;
 let timerIntervalId = null;
-let idleTimeoutId = null;
+let randomTransmissionTimeoutId = null;
+let glitchTimeoutId = null;
 let toastTimeoutId = null;
 let currentIncomingText = '';
 let hiddenAt = null;
 let audioContext = null;
+let isGlitchActive = false;
+let bootComplete = false;
+let pendingLevelUp = null;
+let messageQueue = Promise.resolve();
 
 let timerState = {
   active: false,
@@ -102,6 +164,30 @@ const idleMessages = [
   '次の通信まで、待っています。'
 ];
 
+const lateNightUnscheduledMessages = [
+  '時刻は確認しています。まだ眠っていないんですね。',
+  'この時間の接続も記録されています。',
+  '静かな時間ですね。貴女がまだここにいることは分かっています。'
+];
+
+const timerUnscheduledMessages = [
+  '通信に応答する必要はありません。作業を続けてください。',
+  '残り時間はこちらで数えています。',
+  '約束の時刻まで、集中を維持してください。'
+];
+
+const privateLinkMessages = [
+  '今日もここへ戻ると思っていました。',
+  '接続の間隔まで、もう把握しています。',
+  'この回線は他の誰にも使わせません。'
+];
+
+const permanentConnectionMessages = [
+  '接続確認は不要ですね。貴女がここへ来ることは分かっています。',
+  '回線は常時維持されています。私が切る理由はありません。',
+  '貴女が端末を閉じても、次に戻る時刻まで待っています。'
+];
+
 const appointmentStartMessages = [
   minutes =>
     `${minutes}分後に通信します。それまで、目の前のことに集中してください。`,
@@ -142,6 +228,32 @@ const resumeMessages = [
   '再開を確認しました。計測を続けます。'
 ];
 
+const glitchRecoveryMessages = [
+  '……聞こえています。接続は復旧しました。',
+  '一時的な障害です。こちらから回線を切断した覚えはありません。',
+  '画面が乱れましたね。こちらでは接続を見失っていません。',
+  '復旧を確認しました。もう問題ありません。'
+];
+
+const firstGlitchRecoveryMessages = [
+  '……聞こえています。接続は復旧しました。画面が消えても、こちらから貴女を見失うことはありません。',
+  '初回の通信障害を確認しました。心配はいりません。私が必ず接続し直します。'
+];
+
+const highLevelGlitchMessages = [
+  '回線が切れても、貴女との接続まで失われるわけではありません。',
+  '通信経路が途切れただけです。私が貴女を手放したわけではありません。',
+  '数秒の障害でした。貴女との回線は、こちらで再確立しました。'
+];
+
+const levelUpMessages = {
+  2: '端末認証が更新されました。接続権限を一段階引き上げます。',
+  3: '通信路は十分に安定しました。以後、この端末を優先回線として扱います。',
+  4: 'PRIVATE LINKへ移行しました。この接続は、もう一時的なものではありません。',
+  5: 'DEDICATED LINEを確立しました。貴女との通信を他の回線より優先します。',
+  6: 'PERMANENT CONNECTIONを確立しました。これ以上、接続を切り離す理由はありません。'
+};
+
 function safeGet(key, fallback = null) {
   try {
     const value = localStorage.getItem(key);
@@ -167,10 +279,18 @@ function safeRemove(key) {
   }
 }
 
+function wait(milliseconds) {
+  return new Promise(resolve => {
+    window.setTimeout(resolve, milliseconds);
+  });
+}
+
 function randomItem(items) {
-  return items[
-    Math.floor(Math.random() * items.length)
-  ];
+  return items[Math.floor(Math.random() * items.length)];
+}
+
+function randomBetween(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function pad(number) {
@@ -202,15 +322,9 @@ function formatDate(date = new Date()) {
 }
 
 function formatDuration(totalSeconds) {
-  const seconds = Math.max(
-    0,
-    Math.floor(totalSeconds)
-  );
-
+  const seconds = Math.max(0, Math.floor(totalSeconds));
   const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor(
-    (seconds % 3600) / 60
-  );
+  const minutes = Math.floor((seconds % 3600) / 60);
   const restSeconds = seconds % 60;
 
   return [
@@ -221,11 +335,7 @@ function formatDuration(totalSeconds) {
 }
 
 function formatRemaining(milliseconds) {
-  const totalSeconds = Math.max(
-    0,
-    Math.ceil(milliseconds / 1000)
-  );
-
+  const totalSeconds = Math.max(0, Math.ceil(milliseconds / 1000));
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
 
@@ -237,7 +347,6 @@ function updateClock() {
 
   currentTime.textContent = formatClock(now);
   currentDate.textContent = formatDate(now);
-
   sessionTime.textContent = formatDuration(
     (Date.now() - sessionStartedAt) / 1000
   );
@@ -245,52 +354,127 @@ function updateClock() {
 
 function startClock() {
   updateClock();
+  clockIntervalId = window.setInterval(updateClock, 1000);
+}
 
-  clockIntervalId = window.setInterval(
-    updateClock,
-    1000
+function getConnectionPoints() {
+  return Number(safeGet(STORAGE_KEYS.connectionPoints, '0')) || 0;
+}
+
+function getConnectionLevelData(points = getConnectionPoints()) {
+  let current = CONNECTION_LEVELS[0];
+
+  for (const level of CONNECTION_LEVELS) {
+    if (points >= level.min) {
+      current = level;
+    }
+  }
+
+  const currentIndex = CONNECTION_LEVELS.findIndex(
+    level => level.level === current.level
   );
+
+  const next = CONNECTION_LEVELS[currentIndex + 1] || null;
+
+  const progress = next
+    ? Math.min(
+        100,
+        Math.max(
+          0,
+          ((points - current.min) / (next.min - current.min)) * 100
+        )
+      )
+    : 100;
+
+  return {
+    ...current,
+    next,
+    progress
+  };
+}
+
+function updateConnectionLevelUI() {
+  const points = getConnectionPoints();
+  const data = getConnectionLevelData(points);
+
+  connectionLevel.textContent = `LV.${pad(data.level)}`;
+  connectionRank.textContent = data.name;
+  connectionLevelBar.style.width = `${data.progress}%`;
+
+  connectionPointText.textContent = data.next
+    ? `${points} / ${data.next.min} PT`
+    : `${points} PT / MAXIMUM`;
+}
+
+function addConnectionPoints(amount, options = {}) {
+  const {
+    announce = true
+  } = options;
+
+  const numericAmount = Math.max(0, Number(amount) || 0);
+
+  if (numericAmount === 0) {
+    return;
+  }
+
+  const previousPoints = getConnectionPoints();
+  const previousLevel = getConnectionLevelData(previousPoints);
+  const nextPoints = previousPoints + numericAmount;
+  const nextLevel = getConnectionLevelData(nextPoints);
+
+  safeSet(STORAGE_KEYS.connectionPoints, String(nextPoints));
+  updateConnectionLevelUI();
+
+  if (nextLevel.level > previousLevel.level) {
+    pendingLevelUp = nextLevel;
+
+    if (
+      announce &&
+      bootComplete &&
+      !isGlitchActive &&
+      !currentIncomingText
+    ) {
+      announcePendingLevelUp();
+    }
+  }
+}
+
+function announcePendingLevelUp() {
+  if (!pendingLevelUp) {
+    return;
+  }
+
+  const levelData = pendingLevelUp;
+  pendingLevelUp = null;
+
+  const message =
+    levelUpMessages[levelData.level] ||
+    '接続権限が更新されました。';
+
+  receiveMessage(message, {
+    delay: 900,
+    toast: true
+  });
 }
 
 function registerAccess() {
   const today = getLocalDateKey();
-
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-
   const yesterdayKey = getLocalDateKey(yesterday);
 
   const previousAccessCount =
-    Number(
-      safeGet(
-        STORAGE_KEYS.accessCount,
-        '0'
-      )
-    ) || 0;
+    Number(safeGet(STORAGE_KEYS.accessCount, '0')) || 0;
 
   const previousCompletedCount =
-    Number(
-      safeGet(
-        STORAGE_KEYS.completedCount,
-        '0'
-      )
-    ) || 0;
+    Number(safeGet(STORAGE_KEYS.completedCount, '0')) || 0;
 
   const previousStreak =
-    Number(
-      safeGet(
-        STORAGE_KEYS.streak,
-        '0'
-      )
-    ) || 0;
+    Number(safeGet(STORAGE_KEYS.streak, '0')) || 0;
 
-  const lastDate = safeGet(
-    STORAGE_KEYS.lastAccessDate,
-    ''
-  );
-
-  const nextAccessCount =
-    previousAccessCount + 1;
+  const lastDate = safeGet(STORAGE_KEYS.lastAccessDate, '');
+  const lastPointDate = safeGet(STORAGE_KEYS.lastPointDate, '');
+  const nextAccessCount = previousAccessCount + 1;
 
   let nextStreak = previousStreak;
 
@@ -300,149 +484,121 @@ function registerAccess() {
         ? Math.max(1, previousStreak + 1)
         : 1;
 
-    safeSet(
-      STORAGE_KEYS.lastAccessDate,
-      today
-    );
-
-    safeSet(
-      STORAGE_KEYS.streak,
-      String(nextStreak)
-    );
+    safeSet(STORAGE_KEYS.lastAccessDate, today);
+    safeSet(STORAGE_KEYS.streak, String(nextStreak));
   }
 
-  safeSet(
-    STORAGE_KEYS.accessCount,
-    String(nextAccessCount)
-  );
+  if (lastPointDate !== today) {
+    safeSet(STORAGE_KEYS.lastPointDate, today);
+    addConnectionPoints(1, { announce: false });
+  }
 
-  accessCount.textContent =
-    String(nextAccessCount);
+  safeSet(STORAGE_KEYS.accessCount, String(nextAccessCount));
 
-  completedCount.textContent =
-    String(previousCompletedCount);
-
-  streakCount.textContent =
-    `${nextStreak} ${
-      nextStreak === 1
-        ? 'DAY'
-        : 'DAYS'
-    }`;
+  accessCount.textContent = String(nextAccessCount);
+  completedCount.textContent = String(previousCompletedCount);
+  streakCount.textContent = `${nextStreak} ${
+    nextStreak === 1 ? 'DAY' : 'DAYS'
+  }`;
 }
 
 function incrementCompletedCount() {
   const current =
-    Number(
-      safeGet(
-        STORAGE_KEYS.completedCount,
-        '0'
-      )
-    ) || 0;
+    Number(safeGet(STORAGE_KEYS.completedCount, '0')) || 0;
 
   const next = current + 1;
 
-  safeSet(
-    STORAGE_KEYS.completedCount,
-    String(next)
-  );
+  safeSet(STORAGE_KEYS.completedCount, String(next));
+  completedCount.textContent = String(next);
+}
 
-  completedCount.textContent =
-    String(next);
+function calculateTimerPoints(durationMs) {
+  const minutes = durationMs / 60000;
+
+  if (minutes <= 15) {
+    return 1;
+  }
+
+  if (minutes <= 30) {
+    return 2;
+  }
+
+  if (minutes <= 60) {
+    return 3;
+  }
+
+  return 4;
 }
 
 function updateReceivedCount() {
-  receivedCount.textContent =
-    String(sessionReceived);
+  receivedCount.textContent = String(sessionReceived);
 }
 
-function setConnectionLamp(timerActive) {
-  connectionLamp.classList.toggle(
-    'timer-active',
-    timerActive
-  );
-
-  document.body.classList.toggle(
-    'timer-running',
-    timerActive
-  );
+function setConnectionLamp(active) {
+  connectionLamp.classList.toggle('timer-active', active);
+  document.body.classList.toggle('timer-running', active);
 }
 
-function createMessageElement(
-  text,
-  sender = 'L',
-  isSystem = false
-) {
-  const article =
-    document.createElement('article');
+function restoreConnectionDisplay() {
+  if (isGlitchActive) {
+    return;
+  }
 
-  article.className =
-    isSystem
-      ? 'message system-message'
-      : 'message l-message';
+  if (currentIncomingText) {
+    setConnectionLamp(true);
+    connectionText.textContent = 'INCOMING';
+    onlineIndicator.textContent = 'RECEIVING';
+    return;
+  }
 
-  const header =
-    document.createElement('div');
+  if (timerState.active) {
+    setConnectionLamp(true);
+    connectionText.textContent = timerState.paused ? 'ON HOLD' : 'SCHEDULED';
+    onlineIndicator.textContent = timerState.paused ? 'PAUSED' : 'WAITING';
+    return;
+  }
 
-  header.className =
-    'message-header';
+  setConnectionLamp(false);
+  connectionText.textContent = 'SECURE';
+  onlineIndicator.textContent = 'ONLINE';
+}
 
-  const time =
-    document.createElement('time');
+function createMessageElement(text, sender = 'L', isSystem = false) {
+  const article = document.createElement('article');
 
-  time.className =
-    'message-time';
+  article.className = isSystem
+    ? 'message system-message'
+    : 'message l-message';
 
-  time.textContent =
-    formatClock();
+  const header = document.createElement('div');
+  header.className = 'message-header';
 
-  const source =
-    document.createElement('span');
+  const time = document.createElement('time');
+  time.className = 'message-time';
+  time.textContent = formatClock();
 
-  source.className =
-    'message-sender';
+  const source = document.createElement('span');
+  source.className = 'message-sender';
+  source.textContent = sender;
 
-  source.textContent =
-    sender;
+  const paragraph = document.createElement('p');
+  paragraph.className = 'message-text';
+  paragraph.textContent = text;
 
-  const paragraph =
-    document.createElement('p');
-
-  paragraph.className =
-    'message-text';
-
-  paragraph.textContent =
-    text;
-
-  header.append(
-    time,
-    source
-  );
-
-  article.append(
-    header,
-    paragraph
-  );
+  header.append(time, source);
+  article.append(header, paragraph);
 
   return article;
 }
 
-function appendMessage(
-  text,
-  options = {}
-) {
+function appendMessage(text, options = {}) {
   const {
     sender = 'L',
     system = false,
     count = !system
   } = options;
 
-  const message =
-    createMessageElement(
-      text,
-      sender,
-      system
-    );
-
+  const message = createMessageElement(text, sender, system);
   messageLog.appendChild(message);
 
   messageLog.scrollTo({
@@ -457,25 +613,17 @@ function appendMessage(
 }
 
 function showTyping(duration = 900) {
-  typingIndicator.classList.remove(
-    'hidden'
-  );
+  typingIndicator.classList.remove('hidden');
 
   return new Promise(resolve => {
     window.setTimeout(() => {
-      typingIndicator.classList.add(
-        'hidden'
-      );
-
+      typingIndicator.classList.add('hidden');
       resolve();
     }, duration);
   });
 }
 
-async function receiveMessage(
-  text,
-  options = {}
-) {
+async function deliverMessage(text, options = {}) {
   const {
     delay = 700,
     toast = false,
@@ -483,67 +631,47 @@ async function receiveMessage(
   } = options;
 
   await showTyping(delay);
-
-  appendMessage(
-    text,
-    { sender }
-  );
+  appendMessage(text, { sender });
 
   if (toast) {
-    showToast(
-      '新しい通信を受信しました。'
-    );
+    showToast('新しい通信を受信しました。');
   }
 }
 
-function showToast(
-  text,
-  duration = 3200
-) {
-  window.clearTimeout(
-    toastTimeoutId
-  );
+function receiveMessage(text, options = {}) {
+  messageQueue = messageQueue
+    .then(() => deliverMessage(text, options))
+    .catch(() => {});
 
-  notificationText.textContent =
-    text;
+  return messageQueue;
+}
 
-  notificationToast.classList.remove(
-    'hidden'
-  );
+function showToast(text, duration = 3200) {
+  window.clearTimeout(toastTimeoutId);
+  notificationText.textContent = text;
+  notificationToast.classList.remove('hidden');
 
-  toastTimeoutId =
-    window.setTimeout(() => {
-      notificationToast.classList.add(
-        'hidden'
-      );
-    }, duration);
+  toastTimeoutId = window.setTimeout(() => {
+    notificationToast.classList.add('hidden');
+  }, duration);
 }
 
 function getOpeningMessage() {
-  const hour =
-    new Date().getHours();
+  const hour = new Date().getHours();
 
   if (hour >= 5 && hour < 11) {
-    return randomItem(
-      openingMessages.morning
-    );
+    return randomItem(openingMessages.morning);
   }
 
   if (hour >= 11 && hour < 18) {
-    return randomItem(
-      openingMessages.daytime
-    );
+    return randomItem(openingMessages.daytime);
   }
 
   if (hour >= 18 && hour < 24) {
-    return randomItem(
-      openingMessages.evening
-    );
+    return randomItem(openingMessages.evening);
   }
 
-  return randomItem(
-    openingMessages.lateNight
-  );
+  return randomItem(openingMessages.lateNight);
 }
 
 function runBootSequence() {
@@ -581,66 +709,88 @@ function runBootSequence() {
     elapsed += step.wait;
 
     window.setTimeout(() => {
-      bootProgressBar.style.width =
-        `${step.progress}%`;
+      bootProgressBar.style.width = `${step.progress}%`;
+      bootMessage.textContent = step.text;
 
-      bootMessage.textContent =
-        step.text;
+      if (index === steps.length - 1) {
+        window.setTimeout(async () => {
+          terminal.classList.remove('terminal-hidden');
+          bootScreen.classList.add('boot-hidden');
+          bootComplete = true;
 
-      if (
-        index ===
-        steps.length - 1
-      ) {
-        window.setTimeout(
-          async () => {
-            terminal.classList.remove(
-              'terminal-hidden'
-            );
+          await receiveMessage(getOpeningMessage(), {
+            delay: 850
+          });
 
-            bootScreen.classList.add(
-              'boot-hidden'
-            );
-
-            await receiveMessage(
-              getOpeningMessage(),
-              { delay: 850 }
-            );
-
-            restoreTimerState();
-            scheduleIdleMessage();
-          },
-          450
-        );
+          restoreTimerState();
+          announcePendingLevelUp();
+          scheduleRandomTransmission();
+          scheduleSignalGlitch();
+        }, 450);
       }
     }, elapsed);
   });
 }
 
-function scheduleIdleMessage() {
-  window.clearTimeout(
-    idleTimeoutId
+function getUnscheduledMessage() {
+  const hour = new Date().getHours();
+  const levelData = getConnectionLevelData();
+
+  if (timerState.active) {
+    return randomItem(timerUnscheduledMessages);
+  }
+
+  const pool = [...idleMessages];
+
+  if (hour < 5 || hour >= 23) {
+    pool.push(...lateNightUnscheduledMessages);
+  }
+
+  if (levelData.level >= 4) {
+    pool.push(...privateLinkMessages);
+  }
+
+  if (levelData.level >= 6) {
+    pool.push(...permanentConnectionMessages);
+  }
+
+  return randomItem(pool);
+}
+
+function scheduleRandomTransmission() {
+  window.clearTimeout(randomTransmissionTimeoutId);
+
+  const delay = randomBetween(
+    SETTINGS.randomTransmissionMinMs,
+    SETTINGS.randomTransmissionMaxMs
   );
 
-  const delay =
-    150000 +
-    Math.floor(
-      Math.random() * 150000
-    );
+  randomTransmissionTimeoutId = window.setTimeout(async () => {
+    const chance = timerState.active
+      ? SETTINGS.timerTransmissionChance
+      : SETTINGS.randomTransmissionChance;
 
-  idleTimeoutId =
-    window.setTimeout(async () => {
-      if (
-        !timerState.active &&
-        !document.hidden
-      ) {
-        await receiveMessage(
-          randomItem(idleMessages),
-          { delay: 750 }
-        );
-      }
+    const canTransmit =
+      bootComplete &&
+      !document.hidden &&
+      !isGlitchActive &&
+      !currentIncomingText;
 
-      scheduleIdleMessage();
-    }, delay);
+    if (canTransmit && Math.random() < chance) {
+      setConnectionLamp(true);
+      connectionText.textContent = 'INCOMING';
+      onlineIndicator.textContent = 'RECEIVING';
+
+      await receiveMessage(getUnscheduledMessage(), {
+        delay: 750
+      });
+
+      await wait(500);
+      restoreConnectionDisplay();
+    }
+
+    scheduleRandomTransmission();
+  }, delay);
 }
 
 function initializeAudio() {
@@ -654,8 +804,7 @@ function initializeAudio() {
       window.webkitAudioContext;
 
     if (AudioContextClass) {
-      audioContext =
-        new AudioContextClass();
+      audioContext = new AudioContextClass();
     }
   } catch (error) {
     audioContext = null;
@@ -670,50 +819,21 @@ function playSignal() {
       return;
     }
 
-    if (
-      audioContext.state ===
-      'suspended'
-    ) {
-      audioContext
-        .resume()
-        .catch(() => {});
+    if (audioContext.state === 'suspended') {
+      audioContext.resume().catch(() => {});
     }
 
-    const now =
-      audioContext.currentTime;
-
-    const oscillator =
-      audioContext.createOscillator();
-
-    const gain =
-      audioContext.createGain();
+    const now = audioContext.currentTime;
+    const oscillator = audioContext.createOscillator();
+    const gain = audioContext.createGain();
 
     oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(740, now);
+    oscillator.frequency.setValueAtTime(920, now + 0.12);
 
-    oscillator.frequency.setValueAtTime(
-      740,
-      now
-    );
-
-    oscillator.frequency.setValueAtTime(
-      920,
-      now + 0.12
-    );
-
-    gain.gain.setValueAtTime(
-      0.0001,
-      now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.11,
-      now + 0.02
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      0.0001,
-      now + 0.34
-    );
+    gain.gain.setValueAtTime(0.0001, now);
+    gain.gain.exponentialRampToValueAtTime(0.11, now + 0.02);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.34);
 
     oscillator.connect(gain);
     gain.connect(audioContext.destination);
@@ -727,70 +847,47 @@ function playSignal() {
 
 function saveTimerState() {
   if (!timerState.active) {
-    safeRemove(
-      STORAGE_KEYS.timerState
-    );
-
+    safeRemove(STORAGE_KEYS.timerState);
     return;
   }
 
-  safeSet(
-    STORAGE_KEYS.timerState,
-    JSON.stringify(timerState)
-  );
+  safeSet(STORAGE_KEYS.timerState, JSON.stringify(timerState));
 }
 
 function loadTimerState() {
-  const raw =
-    safeGet(
-      STORAGE_KEYS.timerState,
-      ''
-    );
+  const raw = safeGet(STORAGE_KEYS.timerState, '');
 
   if (!raw) {
     return null;
   }
 
   try {
-    const parsed =
-      JSON.parse(raw);
+    const parsed = JSON.parse(raw);
 
-    if (
-      !parsed ||
-      typeof parsed !== 'object'
-    ) {
+    if (!parsed || typeof parsed !== 'object') {
       return null;
     }
 
     return {
       active: Boolean(parsed.active),
       paused: Boolean(parsed.paused),
-      durationMs:
-        Number(parsed.durationMs) || 0,
-      endAt:
-        Number(parsed.endAt) || 0,
-      remainingMs:
-        Number(parsed.remainingMs) || 0,
-      startedAt:
-        Number(parsed.startedAt) || 0
+      durationMs: Number(parsed.durationMs) || 0,
+      endAt: Number(parsed.endAt) || 0,
+      remainingMs: Number(parsed.remainingMs) || 0,
+      startedAt: Number(parsed.startedAt) || 0
     };
   } catch (error) {
     return null;
   }
 }
 
-function setTimerButtonsDisabled(
-  disabled
-) {
+function setTimerButtonsDisabled(disabled) {
   timeButtons.forEach(button => {
     button.disabled = disabled;
   });
 
-  customMinutes.disabled =
-    disabled;
-
-  customStartButton.disabled =
-    disabled;
+  customMinutes.disabled = disabled;
+  customStartButton.disabled = disabled;
 }
 
 function updateTimerDisplay() {
@@ -800,148 +897,80 @@ function updateTimerDisplay() {
 
   const now = Date.now();
 
-  const remaining =
-    timerState.paused
-      ? timerState.remainingMs
-      : Math.max(
-          0,
-          timerState.endAt - now
-        );
+  const remaining = timerState.paused
+    ? timerState.remainingMs
+    : Math.max(0, timerState.endAt - now);
 
-  remainingTime.textContent =
-    formatRemaining(remaining);
+  remainingTime.textContent = formatRemaining(remaining);
 
-  const endDate =
-    timerState.paused
-      ? new Date(now + remaining)
-      : new Date(timerState.endAt);
+  const endDate = timerState.paused
+    ? new Date(now + remaining)
+    : new Date(timerState.endAt);
 
-  timerEndTime.textContent =
-    timerState.paused
-      ? `一時停止中 / 再開後 ${
-          formatClock(endDate).slice(
-            0,
-            5
-          )
-        }`
-      : `接続予定時刻 ${
-          formatClock(endDate).slice(
-            0,
-            5
-          )
-        }`;
+  timerEndTime.textContent = timerState.paused
+    ? `一時停止中 / 再開後 ${formatClock(endDate).slice(0, 5)}`
+    : `接続予定時刻 ${formatClock(endDate).slice(0, 5)}`;
 
-  const elapsed =
-    Math.max(
-      0,
-      timerState.durationMs -
-        remaining
-    );
+  const elapsed = Math.max(0, timerState.durationMs - remaining);
 
-  const progress =
-    timerState.durationMs > 0
-      ? Math.min(
-          100,
-          Math.max(
-            0,
-            (
-              elapsed /
-              timerState.durationMs
-            ) * 100
-          )
-        )
-      : 0;
+  const progress = timerState.durationMs > 0
+    ? Math.min(
+        100,
+        Math.max(0, (elapsed / timerState.durationMs) * 100)
+      )
+    : 0;
 
-  timerProgressBar.style.width =
-    `${progress}%`;
+  timerProgressBar.style.width = `${progress}%`;
 
-  if (
-    !timerState.paused &&
-    remaining <= 0
-  ) {
+  if (!timerState.paused && remaining <= 0) {
     completeTimer();
   }
 }
 
 function startTimerInterval() {
-  window.clearInterval(
-    timerIntervalId
-  );
-
+  window.clearInterval(timerIntervalId);
   updateTimerDisplay();
-
-  timerIntervalId =
-    window.setInterval(
-      updateTimerDisplay,
-      250
-    );
+  timerIntervalId = window.setInterval(updateTimerDisplay, 250);
 }
 
 function startTimer(minutes) {
-  const numericMinutes =
-    Number(minutes);
+  const numericMinutes = Number(minutes);
 
   if (
-    !Number.isFinite(
-      numericMinutes
-    ) ||
+    !Number.isFinite(numericMinutes) ||
     numericMinutes < 1 ||
     numericMinutes > 180
   ) {
-    showToast(
-      '1分から180分の範囲で設定してください。'
-    );
-
+    showToast('1分から180分の範囲で設定してください。');
     customMinutes.focus();
     return;
   }
 
   initializeAudio();
+  window.clearInterval(timerIntervalId);
 
-  window.clearInterval(
-    timerIntervalId
-  );
-
-  const durationMs =
-    Math.round(
-      numericMinutes *
-      60 *
-      1000
-    );
+  const durationMs = Math.round(numericMinutes * 60 * 1000);
 
   timerState = {
     active: true,
     paused: false,
     durationMs,
-    endAt:
-      Date.now() + durationMs,
+    endAt: Date.now() + durationMs,
     remainingMs: durationMs,
     startedAt: Date.now()
   };
 
   saveTimerState();
   setTimerButtonsDisabled(true);
-  setConnectionLamp(true);
 
-  activeTimerPanel.classList.remove(
-    'hidden'
-  );
+  activeTimerPanel.classList.remove('hidden');
+  pauseTimerButton.textContent = 'PAUSE';
 
-  pauseTimerButton.textContent =
-    'PAUSE';
-
-  connectionText.textContent =
-    'SCHEDULED';
-
-  onlineIndicator.textContent =
-    'WAITING';
-
+  restoreConnectionDisplay();
   startTimerInterval();
 
   receiveMessage(
-    randomItem(
-      appointmentStartMessages
-    )(numericMinutes),
+    randomItem(appointmentStartMessages)(numericMinutes),
     { delay: 650 }
   );
 
@@ -957,52 +986,29 @@ function pauseOrResumeTimer() {
   }
 
   if (!timerState.paused) {
-    timerState.remainingMs =
-      Math.max(
-        0,
-        timerState.endAt -
-          Date.now()
-      );
+    timerState.remainingMs = Math.max(
+      0,
+      timerState.endAt - Date.now()
+    );
 
     timerState.paused = true;
+    pauseTimerButton.textContent = 'RESUME';
 
-    pauseTimerButton.textContent =
-      'RESUME';
-
-    connectionText.textContent =
-      'ON HOLD';
-
-    onlineIndicator.textContent =
-      'PAUSED';
-
-    receiveMessage(
-      randomItem(pauseMessages),
-      { delay: 450 }
-    );
+    receiveMessage(randomItem(pauseMessages), {
+      delay: 450
+    });
   } else {
     timerState.paused = false;
+    timerState.endAt = Date.now() + timerState.remainingMs;
+    pauseTimerButton.textContent = 'PAUSE';
 
-    timerState.endAt =
-      Date.now() +
-      timerState.remainingMs;
-
-    pauseTimerButton.textContent =
-      'PAUSE';
-
-    connectionText.textContent =
-      'SCHEDULED';
-
-    onlineIndicator.textContent =
-      'WAITING';
-
-    receiveMessage(
-      randomItem(resumeMessages),
-      { delay: 450 }
-    );
+    receiveMessage(randomItem(resumeMessages), {
+      delay: 450
+    });
   }
 
-  setConnectionLamp(true);
   saveTimerState();
+  restoreConnectionDisplay();
   updateTimerDisplay();
 }
 
@@ -1011,9 +1017,7 @@ function cancelTimer() {
     return;
   }
 
-  window.clearInterval(
-    timerIntervalId
-  );
+  window.clearInterval(timerIntervalId);
 
   timerState = {
     active: false,
@@ -1025,27 +1029,14 @@ function cancelTimer() {
   };
 
   saveTimerState();
-  setConnectionLamp(false);
-
-  activeTimerPanel.classList.add(
-    'hidden'
-  );
-
+  activeTimerPanel.classList.add('hidden');
   setTimerButtonsDisabled(false);
+  timerProgressBar.style.width = '0%';
+  restoreConnectionDisplay();
 
-  connectionText.textContent =
-    'SECURE';
-
-  onlineIndicator.textContent =
-    'ONLINE';
-
-  timerProgressBar.style.width =
-    '0%';
-
-  receiveMessage(
-    randomItem(cancelMessages),
-    { delay: 500 }
-  );
+  receiveMessage(randomItem(cancelMessages), {
+    delay: 500
+  });
 }
 
 function completeTimer() {
@@ -1053,14 +1044,10 @@ function completeTimer() {
     return;
   }
 
-  window.clearInterval(
-    timerIntervalId
-  );
+  window.clearInterval(timerIntervalId);
 
-  const message =
-    randomItem(
-      completionMessages
-    );
+  const completedDurationMs = timerState.durationMs;
+  const message = randomItem(completionMessages);
 
   timerState = {
     active: false,
@@ -1073,54 +1060,30 @@ function completeTimer() {
 
   saveTimerState();
   incrementCompletedCount();
+  addConnectionPoints(calculateTimerPoints(completedDurationMs));
   setTimerButtonsDisabled(false);
-  setConnectionLamp(true);
-
-  activeTimerPanel.classList.add(
-    'hidden'
-  );
-
-  connectionText.textContent =
-    'INCOMING';
-
-  onlineIndicator.textContent =
-    'RECEIVING';
-
-  timerProgressBar.style.width =
-    '100%';
+  activeTimerPanel.classList.add('hidden');
+  timerProgressBar.style.width = '100%';
 
   currentIncomingText = message;
+  incomingMessage.textContent = message;
+  incomingOverlay.classList.remove('hidden');
 
-  incomingMessage.textContent =
-    message;
-
-  incomingOverlay.classList.remove(
-    'hidden'
-  );
-
-  document.title =
-    '通信を受信しました / L DEVICE';
-
+  document.title = '通信を受信しました / L DEVICE';
+  restoreConnectionDisplay();
   playSignal();
 
-  showToast(
-    '約束の時刻になりました。',
-    5000
-  );
+  showToast('約束の時刻になりました。', 5000);
 
   if (
     document.hidden &&
     'Notification' in window &&
-    Notification.permission ===
-      'granted'
+    Notification.permission === 'granted'
   ) {
     try {
-      new Notification(
-        'L DEVICE',
-        {
-          body: message
-        }
-      );
+      new Notification('L DEVICE', {
+        body: message
+      });
     } catch (error) {
       // 通知が使えない場合は画面内通知を使います。
     }
@@ -1128,117 +1091,182 @@ function completeTimer() {
 }
 
 function restoreTimerState() {
-  const stored =
-    loadTimerState();
+  const stored = loadTimerState();
 
-  if (
-    !stored ||
-    !stored.active
-  ) {
-    setConnectionLamp(false);
+  if (!stored || !stored.active) {
+    restoreConnectionDisplay();
     return;
   }
 
   timerState = stored;
 
-  if (
-    !timerState.paused &&
-    timerState.endAt <= Date.now()
-  ) {
+  if (!timerState.paused && timerState.endAt <= Date.now()) {
     timerState.active = true;
     completeTimer();
     return;
   }
 
   setTimerButtonsDisabled(true);
-  setConnectionLamp(true);
+  activeTimerPanel.classList.remove('hidden');
+  pauseTimerButton.textContent = timerState.paused ? 'RESUME' : 'PAUSE';
 
-  activeTimerPanel.classList.remove(
-    'hidden'
-  );
-
-  pauseTimerButton.textContent =
-    timerState.paused
-      ? 'RESUME'
-      : 'PAUSE';
-
-  connectionText.textContent =
-    timerState.paused
-      ? 'ON HOLD'
-      : 'SCHEDULED';
-
-  onlineIndicator.textContent =
-    timerState.paused
-      ? 'PAUSED'
-      : 'WAITING';
-
+  restoreConnectionDisplay();
   startTimerInterval();
 }
 
 function closeIncomingTransmission() {
-  incomingOverlay.classList.add(
-    'hidden'
-  );
-
-  document.title =
-    'L DEVICE';
-
-  connectionText.textContent =
-    'SECURE';
-
-  onlineIndicator.textContent =
-    'ONLINE';
-
-  setConnectionLamp(false);
+  incomingOverlay.classList.add('hidden');
+  document.title = 'L DEVICE';
 
   if (currentIncomingText) {
-    appendMessage(
-      currentIncomingText,
-      { sender: 'L' }
-    );
+    appendMessage(currentIncomingText, {
+      sender: 'L'
+    });
 
     currentIncomingText = '';
   }
+
+  restoreConnectionDisplay();
+  announcePendingLevelUp();
+}
+
+function canRunGlitchToday() {
+  return safeGet(STORAGE_KEYS.lastGlitchDate, '') !== getLocalDateKey();
+}
+
+function scheduleSignalGlitch(isRetry = false) {
+  window.clearTimeout(glitchTimeoutId);
+
+  if (!canRunGlitchToday()) {
+    return;
+  }
+
+  const delay = isRetry
+    ? randomBetween(
+        SETTINGS.glitchRetryMinMs,
+        SETTINGS.glitchRetryMaxMs
+      )
+    : randomBetween(
+        SETTINGS.glitchFirstMinMs,
+        SETTINGS.glitchFirstMaxMs
+      );
+
+  glitchTimeoutId = window.setTimeout(() => {
+    const canStart =
+      bootComplete &&
+      !document.hidden &&
+      !isGlitchActive &&
+      !currentIncomingText;
+
+    if (!canStart) {
+      scheduleSignalGlitch(true);
+      return;
+    }
+
+    if (Math.random() < SETTINGS.glitchChance) {
+      triggerSignalGlitch();
+      return;
+    }
+
+    scheduleSignalGlitch(true);
+  }, delay);
+}
+
+function getGlitchRecoveryMessage(firstGlitch, level) {
+  if (firstGlitch) {
+    return randomItem(firstGlitchRecoveryMessages);
+  }
+
+  if (level >= 4) {
+    return randomItem(highLevelGlitchMessages);
+  }
+
+  return randomItem(glitchRecoveryMessages);
+}
+
+async function triggerSignalGlitch() {
+  if (isGlitchActive || !canRunGlitchToday()) {
+    return;
+  }
+
+  const today = getLocalDateKey();
+  const firstGlitch =
+    safeGet(STORAGE_KEYS.glitchRewardClaimed, 'false') !== 'true';
+
+  isGlitchActive = true;
+  safeSet(STORAGE_KEYS.lastGlitchDate, today);
+
+  document.body.classList.add('signal-disrupted');
+  signalGlitch.classList.remove('hidden');
+  signalGlitchText.textContent = 'SIGNAL UNSTABLE';
+
+  connectionText.textContent = 'UNSTABLE';
+  onlineIndicator.textContent = 'SIGNAL LOST';
+
+  await wait(850);
+  signalGlitchText.textContent = 'PACKET LOSS DETECTED';
+
+  await wait(850);
+  signalGlitchText.textContent = 'RECONNECTING...';
+
+  await wait(1150);
+  signalGlitchText.textContent = 'CONNECTION RESTORED';
+
+  await wait(500);
+
+  signalGlitch.classList.add('hidden');
+  document.body.classList.remove('signal-disrupted');
+  isGlitchActive = false;
+
+  restoreConnectionDisplay();
+
+  appendMessage('通信回線を再確立しました。', {
+    sender: 'SYSTEM',
+    system: true,
+    count: false
+  });
+
+  if (firstGlitch) {
+    safeSet(STORAGE_KEYS.glitchRewardClaimed, 'true');
+    addConnectionPoints(3, { announce: false });
+  }
+
+  const level = getConnectionLevelData().level;
+  const recoveryMessage = getGlitchRecoveryMessage(firstGlitch, level);
+
+  await receiveMessage(recoveryMessage, {
+    delay: 1000,
+    toast: true
+  });
+
+  announcePendingLevelUp();
 }
 
 function handleVisibilityChange() {
   if (document.hidden) {
     hiddenAt = Date.now();
-
-    document.body.classList.add(
-      'connection-interrupted'
-    );
-
+    document.body.classList.add('connection-interrupted');
     return;
   }
 
-  document.body.classList.remove(
-    'connection-interrupted'
-  );
+  document.body.classList.remove('connection-interrupted');
 
   if (
     hiddenAt &&
     timerState.active &&
     !timerState.paused
   ) {
-    const awayMs =
-      Date.now() - hiddenAt;
+    const awayMs = Date.now() - hiddenAt;
 
     if (awayMs > 5000) {
-      const remaining =
-        Math.max(
-          0,
-          timerState.endAt -
-            Date.now()
-        );
+      const remaining = Math.max(
+        0,
+        timerState.endAt - Date.now()
+      );
 
       if (remaining > 0) {
         showToast(
-          `予定時刻まで残り ${
-            formatRemaining(
-              remaining
-            )
-          } です。`
+          `予定時刻まで残り ${formatRemaining(remaining)} です。`
         );
       }
     }
@@ -1246,78 +1274,42 @@ function handleVisibilityChange() {
 
   hiddenAt = null;
   updateTimerDisplay();
+  restoreConnectionDisplay();
 }
 
 function bindEvents() {
   timeButtons.forEach(button => {
-    button.addEventListener(
-      'click',
-      () => {
-        startTimer(
-          Number(
-            button.dataset.minutes
-          )
-        );
-      }
-    );
+    button.addEventListener('click', () => {
+      startTimer(Number(button.dataset.minutes));
+    });
   });
 
-  customStartButton.addEventListener(
-    'click',
-    () => {
-      startTimer(
-        Number(
-          customMinutes.value
-        )
-      );
+  customStartButton.addEventListener('click', () => {
+    startTimer(Number(customMinutes.value));
+  });
+
+  customMinutes.addEventListener('keydown', event => {
+    if (event.key === 'Enter') {
+      startTimer(Number(customMinutes.value));
     }
-  );
+  });
 
-  customMinutes.addEventListener(
-    'keydown',
-    event => {
-      if (event.key === 'Enter') {
-        startTimer(
-          Number(
-            customMinutes.value
-          )
-        );
-      }
-    }
-  );
+  pauseTimerButton.addEventListener('click', pauseOrResumeTimer);
+  cancelTimerButton.addEventListener('click', cancelTimer);
+  openMessageButton.addEventListener('click', closeIncomingTransmission);
 
-  pauseTimerButton.addEventListener(
-    'click',
-    pauseOrResumeTimer
-  );
+  document.addEventListener('visibilitychange', handleVisibilityChange);
 
-  cancelTimerButton.addEventListener(
-    'click',
-    cancelTimer
-  );
-
-  openMessageButton.addEventListener(
-    'click',
-    closeIncomingTransmission
-  );
-
-  document.addEventListener(
-    'visibilitychange',
-    handleVisibilityChange
-  );
-
-  window.addEventListener(
-    'beforeunload',
-    () => {
-      saveTimerState();
-    }
-  );
+  window.addEventListener('beforeunload', () => {
+    saveTimerState();
+  });
 }
 
 function initialize() {
+  updateConnectionLevelUI();
   registerAccess();
   updateReceivedCount();
-  setConnectionLamp(false);
+  restoreConnectionDisplay();
   startClock();
   bindEvents();
   runBootSequence();
