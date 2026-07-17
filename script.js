@@ -32,27 +32,27 @@ const CONNECTION_LEVELS = [
   },
   {
     level: 2,
-    min: 10,
+    min: 5,
     name: 'VERIFIED DEVICE'
   },
   {
     level: 3,
-    min: 25,
+    min: 12,
     name: 'SECURE CHANNEL'
   },
   {
     level: 4,
-    min: 50,
+    min: 24,
     name: 'PRIVATE LINK'
   },
   {
     level: 5,
-    min: 90,
+    min: 40,
     name: 'DEDICATED LINE'
   },
   {
     level: 6,
-    min: 150,
+    min: 65,
     name: 'PERMANENT CONNECTION'
   }
 ];
