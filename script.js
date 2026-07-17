@@ -251,7 +251,7 @@ const levelUpMessages = {
   3: '通信路は十分に安定しました。以後、この端末を優先回線として扱います。',
   4: 'PRIVATE LINKへ移行しました。この接続は、もう一時的なものではありません。',
   5: 'DEDICATED LINEを確立しました。貴女との通信を他の回線より優先します。',
-  6: 'PERMANENT CONNECTIONを確立しました。これ以上、接続を切り離す理由はありません。'
+  6: 'PERMANENT CONNECTIONを確立しました。貴女との接続が切れることは認めません。'
 };
 
 function safeGet(key, fallback = null) {
