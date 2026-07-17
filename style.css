@@ -3,30 +3,19 @@
   --surface: #ffffff;
   --surface-soft: #f7f7f7;
   --surface-dark: #111111;
-
   --text: #111111;
   --text-soft: #666666;
   --text-faint: #999999;
-
   --line: #dedede;
   --line-dark: #b8b8b8;
-
   --accent: #b01818;
   --accent-soft: #fff1f1;
-
   --connection-green: #258a47;
   --connection-green-soft: #edf8f1;
-
   --shadow-small: 0 8px 24px rgba(0, 0, 0, 0.06);
   --shadow-large: 0 24px 70px rgba(0, 0, 0, 0.14);
-
   --content-width: 1080px;
 }
-
-
-/* ========================================
-   基本設定
-======================================== */
 
 *,
 *::before,
@@ -43,7 +32,6 @@ html {
 body {
   min-height: 100vh;
   margin: 0;
-
   background:
     linear-gradient(
       to right,
@@ -58,9 +46,7 @@ body {
       transparent calc(50% + 540px)
     ),
     var(--background);
-
   color: var(--text);
-
   font-family:
     -apple-system,
     BlinkMacSystemFont,
@@ -71,10 +57,8 @@ body {
     "YuGothic",
     "Noto Sans JP",
     sans-serif;
-
   line-height: 1.7;
   letter-spacing: 0.025em;
-
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -118,42 +102,26 @@ img {
   position: fixed;
   inset: 0;
   z-index: 9999;
-
   display: grid;
   place-items: center;
-
   padding: 24px;
-
   background: #ffffff;
   color: #111111;
-
   font-size: 14px;
   text-align: center;
 }
-
-
-/* ========================================
-   起動画面
-======================================== */
 
 .boot-screen {
   position: fixed;
   inset: 0;
   z-index: 1000;
-
   display: grid;
   place-items: center;
-
   padding: 32px;
-
   background: #ffffff;
-
   opacity: 1;
   visibility: visible;
-
-  transition:
-    opacity 0.7s ease,
-    visibility 0.7s ease;
+  transition: opacity 0.7s ease, visibility 0.7s ease;
 }
 
 .boot-screen.boot-hidden {
@@ -170,28 +138,16 @@ img {
 .boot-logo {
   width: 126px;
   height: 126px;
-
   margin: 0 auto 30px;
-
   object-fit: contain;
-
   filter: grayscale(1) contrast(1.08);
-
   animation: bootLogoAppear 0.9s ease both;
 }
 
 .boot-title {
   margin: 0;
-
   color: var(--text);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 0.22em;
@@ -200,16 +156,8 @@ img {
 .boot-message {
   min-height: 24px;
   margin: 14px 0 20px;
-
   color: var(--text-soft);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 11px;
   letter-spacing: 0.14em;
 }
@@ -217,18 +165,14 @@ img {
 .boot-progress {
   width: 100%;
   height: 2px;
-
   overflow: hidden;
-
   background: #e8e8e8;
 }
 
 .boot-progress-bar {
   width: 0;
   height: 100%;
-
   background: #111111;
-
   transition: width 0.45s ease;
 }
 
@@ -244,24 +188,15 @@ img {
   }
 }
 
-
-/* ========================================
-   端末本体
-======================================== */
-
 .terminal {
+  position: relative;
   width: min(var(--content-width), calc(100% - 40px));
   min-height: 100vh;
-
   margin: 0 auto;
   padding: 44px 0 28px;
-
   opacity: 1;
   transform: translateY(0);
-
-  transition:
-    opacity 0.65s ease,
-    transform 0.65s ease;
+  transition: opacity 0.65s ease, transform 0.65s ease;
 }
 
 .terminal-hidden {
@@ -270,20 +205,13 @@ img {
   pointer-events: none;
 }
 
-
-/* ========================================
-   ヘッダー
-======================================== */
-
 .terminal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 28px;
-
   min-height: 92px;
   padding: 0 2px 24px;
-
   border-bottom: 1px solid var(--text);
 }
 
@@ -291,31 +219,20 @@ img {
   display: flex;
   align-items: center;
   gap: 20px;
-
   min-width: 0;
 }
 
 .header-logo {
   width: 72px;
   height: 72px;
-
   flex-shrink: 0;
-
   object-fit: contain;
-
   filter: grayscale(1) contrast(1.08);
 }
 
 .brand-title {
   margin: 0;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -323,16 +240,8 @@ img {
 
 .brand-subtitle {
   margin: 5px 0 0;
-
   color: var(--text-soft);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   letter-spacing: 0.14em;
 }
@@ -341,46 +250,32 @@ img {
   display: flex;
   align-items: center;
   gap: 12px;
-
   flex-shrink: 0;
 }
 
 .connection-lamp {
   position: relative;
-
   width: 8px;
   height: 8px;
-
   border-radius: 50%;
   background: var(--connection-green);
-
-  box-shadow:
-    0 0 0 5px var(--connection-green-soft);
-
-  transition:
-    background 0.25s ease,
-    box-shadow 0.25s ease;
+  box-shadow: 0 0 0 5px var(--connection-green-soft);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
 }
 
 .connection-lamp::after {
   content: "";
-
   position: absolute;
   inset: -5px;
-
   border: 1px solid rgba(37, 138, 71, 0.26);
   border-radius: 50%;
-
   animation: connectionPulse 2.2s ease-out infinite;
-
   transition: border-color 0.25s ease;
 }
 
 .connection-lamp.timer-active {
   background: var(--accent);
-
-  box-shadow:
-    0 0 0 5px var(--accent-soft);
+  box-shadow: 0 0 0 5px var(--accent-soft);
 }
 
 .connection-lamp.timer-active::after {
@@ -390,25 +285,17 @@ img {
 .connection-label,
 .connection-value {
   margin: 0;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 .connection-label {
   color: var(--text-faint);
-
   font-size: 8px;
   letter-spacing: 0.16em;
 }
 
 .connection-value {
   margin-top: 2px;
-
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.14em;
@@ -427,24 +314,16 @@ img {
   }
 }
 
-
-/* ========================================
-   システム情報
-======================================== */
-
 .system-panel {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-
   margin-top: 18px;
-
   border: 1px solid var(--line);
 }
 
 .system-item {
   min-width: 0;
   padding: 16px 18px;
-
   border-right: 1px solid var(--line);
 }
 
@@ -454,34 +333,17 @@ img {
 
 .system-label {
   display: block;
-
   margin-bottom: 5px;
-
   color: var(--text-faint);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 8px;
   letter-spacing: 0.13em;
 }
 
 .system-value {
   display: block;
-
   overflow: hidden;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -489,65 +351,104 @@ img {
   text-overflow: ellipsis;
 }
 
-
-/* ========================================
-   共通見出し
-======================================== */
-
 .section-heading {
   display: flex;
   align-items: flex-end;
   justify-content: space-between;
   gap: 20px;
-
   margin-bottom: 22px;
 }
 
 .section-code {
   margin: 0 0 4px;
-
   color: var(--text-faint);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   letter-spacing: 0.18em;
 }
 
 .section-title {
   margin: 0;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 17px;
   line-height: 1.3;
   letter-spacing: 0.12em;
 }
 
+.connection-level-panel {
+  margin-top: 20px;
+  padding: 22px 24px 20px;
+  border: 1px solid var(--line);
+  background: var(--surface-soft);
+}
 
-/* ========================================
-   通信ログ
-======================================== */
+.connection-level-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.connection-level-title {
+  margin: 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 15px;
+  letter-spacing: 0.13em;
+}
+
+.connection-level-number {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 23px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+}
+
+.connection-level-information {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 15px;
+}
+
+.connection-rank,
+.connection-point-text {
+  margin: 0;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+.connection-rank {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.connection-point-text {
+  color: var(--text-faint);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+}
+
+.connection-level-track {
+  height: 3px;
+  margin-top: 12px;
+  overflow: hidden;
+  background: #dddddd;
+}
+
+.connection-level-bar {
+  width: 0;
+  height: 100%;
+  background: var(--text);
+  transition: width 0.65s ease;
+}
 
 .communication-panel {
   position: relative;
-
-  margin-top: 32px;
+  margin-top: 20px;
   padding: 28px;
-
   border: 1px solid var(--line);
   background: var(--surface);
-
   box-shadow: var(--shadow-small);
 }
 
@@ -555,20 +456,10 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-
   padding: 5px 9px;
-
   border: 1px solid var(--line);
-
   color: var(--text-soft);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 8px;
   font-weight: 700;
   letter-spacing: 0.15em;
@@ -576,13 +467,10 @@ img {
 
 .online-indicator::before {
   content: "";
-
   width: 5px;
   height: 5px;
-
   border-radius: 50%;
   background: var(--connection-green);
-
   transition: background 0.25s ease;
 }
 
@@ -593,13 +481,10 @@ body.timer-running .online-indicator::before {
 .message-log {
   min-height: 280px;
   max-height: 440px;
-
   overflow-y: auto;
   overscroll-behavior: contain;
-
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-
   scrollbar-width: thin;
   scrollbar-color: #bdbdbd transparent;
 }
@@ -618,9 +503,7 @@ body.timer-running .online-indicator::before {
 
 .message {
   padding: 22px 4px;
-
   border-bottom: 1px solid #eeeeee;
-
   animation: messageAppear 0.55s ease both;
 }
 
@@ -632,19 +515,12 @@ body.timer-running .online-indicator::before {
   display: flex;
   align-items: center;
   gap: 12px;
-
   margin-bottom: 8px;
 }
 
 .message-time,
 .message-sender {
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   letter-spacing: 0.12em;
 }
@@ -666,11 +542,8 @@ body.timer-running .online-indicator::before {
 
 .message-text {
   max-width: 720px;
-
   margin: 0;
-
   color: var(--text);
-
   font-size: 14px;
   line-height: 2;
   letter-spacing: 0.045em;
@@ -682,20 +555,16 @@ body.timer-running .online-indicator::before {
 
 .message.l-message {
   position: relative;
-
   padding-left: 20px;
 }
 
 .message.l-message::before {
   content: "";
-
   position: absolute;
   top: 24px;
   bottom: 24px;
   left: 0;
-
   width: 2px;
-
   background: var(--text);
 }
 
@@ -711,25 +580,17 @@ body.timer-running .online-indicator::before {
   }
 }
 
-
-/* ========================================
-   受信中表示
-======================================== */
-
 .typing-indicator {
   display: flex;
   align-items: center;
   gap: 12px;
-
   min-height: 43px;
   padding-top: 13px;
-
   color: var(--text-faint);
 }
 
 .typing-indicator p {
   margin: 0;
-
   font-size: 10px;
   letter-spacing: 0.08em;
 }
@@ -743,10 +604,8 @@ body.timer-running .online-indicator::before {
 .typing-dots span {
   width: 4px;
   height: 4px;
-
   border-radius: 50%;
   background: var(--text);
-
   animation: typingDot 1.2s ease-in-out infinite;
 }
 
@@ -772,26 +631,17 @@ body.timer-running .online-indicator::before {
   }
 }
 
-
-/* ========================================
-   通信予約タイマー
-======================================== */
-
 .appointment-panel {
   margin-top: 20px;
   padding: 28px;
-
   border: 1px solid var(--line);
   background: var(--surface);
 }
 
 .appointment-description {
   max-width: 720px;
-
   margin: -2px 0 24px;
-
   color: var(--text-soft);
-
   font-size: 13px;
   line-height: 1.9;
 }
@@ -805,17 +655,12 @@ body.timer-running .online-indicator::before {
 .time-button {
   min-width: 0;
   min-height: 80px;
-
   padding: 12px 8px;
-
   border: 1px solid var(--line-dark);
   border-radius: 0;
-
   background: #ffffff;
   color: var(--text);
-
   cursor: pointer;
-
   transition:
     background 0.2s ease,
     color 0.2s ease,
@@ -828,7 +673,6 @@ body.timer-running .online-indicator::before {
   border-color: var(--text);
   background: var(--text);
   color: #ffffff;
-
   transform: translateY(-2px);
 }
 
@@ -838,14 +682,7 @@ body.timer-running .online-indicator::before {
 
 .time-number {
   display: block;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 24px;
   font-weight: 500;
   line-height: 1.2;
@@ -854,18 +691,9 @@ body.timer-running .online-indicator::before {
 
 .time-unit {
   display: block;
-
   margin-top: 4px;
-
   color: var(--text-faint);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 8px;
   letter-spacing: 0.16em;
 }
@@ -874,33 +702,19 @@ body.timer-running .online-indicator::before {
   color: rgba(255, 255, 255, 0.68);
 }
 
-
-/* ========================================
-   カスタムタイマー
-======================================== */
-
 .custom-timer {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 20px;
-
   margin-top: 16px;
   padding-top: 16px;
-
   border-top: 1px solid var(--line);
 }
 
 .custom-label {
   color: var(--text-soft);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.16em;
@@ -909,32 +723,20 @@ body.timer-running .online-indicator::before {
 .custom-controls {
   display: flex;
   align-items: center;
-
   border: 1px solid var(--line-dark);
 }
 
 .custom-input {
   width: 92px;
   height: 42px;
-
   padding: 0 12px;
-
   border: 0;
   border-radius: 0;
-
   background: #ffffff;
   color: var(--text);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 14px;
   text-align: right;
-
   appearance: textfield;
 }
 
@@ -954,16 +756,8 @@ body.timer-running .online-indicator::before {
 
 .custom-unit {
   padding: 0 11px;
-
   color: var(--text-faint);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   letter-spacing: 0.1em;
 }
@@ -971,54 +765,31 @@ body.timer-running .online-indicator::before {
 .custom-start-button {
   height: 42px;
   min-width: 72px;
-
   padding: 0 18px;
-
   border: 0;
   border-left: 1px solid var(--line-dark);
   border-radius: 0;
-
   background: var(--text);
   color: #ffffff;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.14em;
-
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease,
-    opacity 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease, opacity 0.2s ease;
 }
 
 .custom-start-button:hover:not(:disabled) {
   background: var(--accent);
 }
 
-
-/* ========================================
-   作動中タイマー
-======================================== */
-
 .active-timer-panel {
   margin-top: 20px;
   padding: 32px 28px;
-
   border: 1px solid var(--text);
   background: var(--surface-dark);
   color: #ffffff;
-
   box-shadow: var(--shadow-large);
-
   animation: activeTimerAppear 0.45s ease both;
 }
 
@@ -1028,30 +799,15 @@ body.timer-running .online-indicator::before {
 
 .active-timer-label {
   margin: 0 0 8px;
-
   color: rgba(255, 255, 255, 0.52);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   letter-spacing: 0.2em;
 }
 
 .remaining-time {
   margin: 0;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: clamp(44px, 8vw, 76px);
   font-weight: 400;
   line-height: 1.1;
@@ -1060,29 +816,22 @@ body.timer-running .online-indicator::before {
 
 .timer-end-time {
   margin: 10px 0 0;
-
   color: rgba(255, 255, 255, 0.6);
-
   font-size: 11px;
   letter-spacing: 0.08em;
 }
 
 .timer-progress-track {
   height: 2px;
-
   margin-top: 25px;
-
   overflow: hidden;
-
   background: rgba(255, 255, 255, 0.16);
 }
 
 .timer-progress-bar {
   width: 0;
   height: 100%;
-
   background: #ffffff;
-
   transition: width 0.7s linear;
 }
 
@@ -1090,38 +839,23 @@ body.timer-running .online-indicator::before {
   display: flex;
   justify-content: center;
   gap: 10px;
-
   margin-top: 22px;
 }
 
 .timer-action-button {
   min-width: 110px;
   height: 38px;
-
   padding: 0 18px;
-
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 0;
-
   background: transparent;
   color: #ffffff;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.13em;
-
   cursor: pointer;
-
-  transition:
-    border-color 0.2s ease,
-    background 0.2s ease;
+  transition: border-color 0.2s ease, background 0.2s ease;
 }
 
 .timer-action-button:hover {
@@ -1146,24 +880,16 @@ body.timer-running .online-indicator::before {
   }
 }
 
-
-/* ========================================
-   利用記録
-======================================== */
-
 .record-panel {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-
   margin-top: 20px;
-
   border: 1px solid var(--line);
 }
 
 .record-item {
   min-width: 0;
   padding: 20px 22px;
-
   border-right: 1px solid var(--line);
 }
 
@@ -1173,34 +899,17 @@ body.timer-running .online-indicator::before {
 
 .record-label {
   display: block;
-
   margin-bottom: 8px;
-
   color: var(--text-faint);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 8px;
   letter-spacing: 0.12em;
 }
 
 .record-value {
   display: block;
-
   overflow: hidden;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 21px;
   font-weight: 500;
   letter-spacing: 0.05em;
@@ -1208,30 +917,15 @@ body.timer-running .online-indicator::before {
   text-overflow: ellipsis;
 }
 
-
-/* ========================================
-   フッター
-======================================== */
-
 .terminal-footer {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-
   margin-top: 30px;
   padding: 18px 2px 0;
-
   border-top: 1px solid var(--line);
-
   color: var(--text-faint);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 8px;
   letter-spacing: 0.12em;
 }
@@ -1240,67 +934,41 @@ body.timer-running .online-indicator::before {
   margin: 0;
 }
 
-
-/* ========================================
-   通信受信オーバーレイ
-======================================== */
-
 .incoming-overlay {
   position: fixed;
   inset: 0;
   z-index: 2000;
-
   display: grid;
   place-items: center;
-
   padding: 24px;
-
   background: rgba(255, 255, 255, 0.92);
-
   backdrop-filter: blur(7px);
   -webkit-backdrop-filter: blur(7px);
-
   animation: overlayAppear 0.35s ease both;
 }
 
 .incoming-window {
   width: min(480px, 100%);
-
   padding: 42px 36px 36px;
-
   border: 1px solid var(--text);
   background: #ffffff;
-
   text-align: center;
-
   box-shadow: var(--shadow-large);
-
   animation: incomingWindowAppear 0.48s ease both;
 }
 
 .incoming-logo {
   width: 90px;
   height: 90px;
-
   margin: 0 auto 24px;
-
   object-fit: contain;
-
   filter: grayscale(1) contrast(1.08);
 }
 
 .incoming-label {
   margin: 0;
-
   color: var(--accent);
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.2em;
@@ -1308,7 +976,6 @@ body.timer-running .online-indicator::before {
 
 .incoming-title {
   margin: 13px 0 0;
-
   font-size: 19px;
   font-weight: 600;
   letter-spacing: 0.06em;
@@ -1316,9 +983,7 @@ body.timer-running .online-indicator::before {
 
 .incoming-message {
   margin: 18px 0 28px;
-
   color: var(--text-soft);
-
   font-size: 14px;
   line-height: 2;
   white-space: pre-line;
@@ -1327,31 +992,17 @@ body.timer-running .online-indicator::before {
 .open-message-button {
   min-width: 190px;
   height: 44px;
-
   padding: 0 24px;
-
   border: 1px solid var(--text);
   border-radius: 0;
-
   background: var(--text);
   color: #ffffff;
-
-  font-family:
-    "SFMono-Regular",
-    Consolas,
-    "Liberation Mono",
-    Menlo,
-    monospace;
-
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.15em;
-
   cursor: pointer;
-
-  transition:
-    background 0.2s ease,
-    color 0.2s ease;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .open-message-button:hover {
@@ -1381,38 +1032,26 @@ body.timer-running .online-indicator::before {
   }
 }
 
-
-/* ========================================
-   小さな通知
-======================================== */
-
 .notification-toast {
   position: fixed;
   right: 22px;
   bottom: 22px;
   z-index: 1500;
-
   display: flex;
   align-items: center;
   gap: 11px;
-
   width: min(340px, calc(100% - 44px));
   min-height: 54px;
-
   padding: 13px 16px;
-
   border: 1px solid var(--text);
   background: #ffffff;
   color: var(--text);
-
   box-shadow: var(--shadow-large);
-
   animation: toastAppear 0.35s ease both;
 }
 
 .notification-toast p {
   margin: 0;
-
   font-size: 11px;
   line-height: 1.6;
 }
@@ -1420,14 +1059,10 @@ body.timer-running .online-indicator::before {
 .notification-dot {
   width: 7px;
   height: 7px;
-
   flex-shrink: 0;
-
   border-radius: 50%;
   background: var(--accent);
-
-  box-shadow:
-    0 0 0 4px var(--accent-soft);
+  box-shadow: 0 0 0 4px var(--accent-soft);
 }
 
 @keyframes toastAppear {
@@ -1442,16 +1077,273 @@ body.timer-running .online-indicator::before {
   }
 }
 
+.signal-glitch {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  overflow: hidden;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.14);
+  animation: glitchFlash 0.16s steps(2, end) infinite;
+}
 
-/* ========================================
-   タブが非表示になった時
-======================================== */
+.signal-glitch-noise,
+.signal-glitch-scanlines,
+.signal-glitch::before,
+.signal-glitch::after {
+  content: "";
+  position: absolute;
+  inset: -15%;
+}
+
+.signal-glitch-noise {
+  background-image:
+    radial-gradient(circle at 20% 10%, rgba(0, 0, 0, 0.5) 0 0.6px, transparent 0.8px),
+    radial-gradient(circle at 80% 35%, rgba(0, 0, 0, 0.36) 0 0.7px, transparent 0.9px),
+    radial-gradient(circle at 30% 85%, rgba(0, 0, 0, 0.4) 0 0.6px, transparent 0.8px);
+  background-size: 4px 4px, 5px 5px, 6px 6px;
+  opacity: 0.34;
+  animation: noiseShift 0.08s steps(2, end) infinite;
+}
+
+.signal-glitch-scanlines {
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.17) 3px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+  opacity: 0.42;
+  animation: scanlineMove 0.32s linear infinite;
+}
+
+.signal-glitch::before {
+  background: linear-gradient(
+    90deg,
+    transparent 0 12%,
+    rgba(0, 0, 0, 0.16) 12% 13%,
+    transparent 13% 46%,
+    rgba(0, 0, 0, 0.1) 46% 48%,
+    transparent 48% 100%
+  );
+  mix-blend-mode: multiply;
+  animation: glitchSlice 0.18s steps(2, end) infinite;
+}
+
+.signal-glitch::after {
+  background: linear-gradient(
+    to bottom,
+    transparent 0 42%,
+    rgba(0, 0, 0, 0.5) 43% 44%,
+    rgba(255, 255, 255, 0.9) 44% 45%,
+    transparent 46% 100%
+  );
+  opacity: 0.55;
+  animation: hardLine 0.44s steps(2, end) infinite;
+}
+
+.signal-glitch-bar {
+  position: absolute;
+  left: -10%;
+  width: 120%;
+  height: 2px;
+  background: rgba(0, 0, 0, 0.68);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.35);
+}
+
+.signal-glitch-bar-1 {
+  top: 18%;
+  animation: glitchBarOne 0.46s steps(2, end) infinite;
+}
+
+.signal-glitch-bar-2 {
+  top: 39%;
+  height: 7px;
+  opacity: 0.38;
+  animation: glitchBarTwo 0.31s steps(2, end) infinite;
+}
+
+.signal-glitch-bar-3 {
+  top: 66%;
+  animation: glitchBarThree 0.53s steps(2, end) infinite;
+}
+
+.signal-glitch-bar-4 {
+  top: 82%;
+  height: 4px;
+  opacity: 0.3;
+  animation: glitchBarFour 0.27s steps(2, end) infinite;
+}
+
+.signal-glitch-status {
+  position: absolute;
+  left: 50%;
+  bottom: 10%;
+  transform: translateX(-50%);
+  min-width: min(360px, calc(100% - 40px));
+  padding: 12px 18px;
+  border: 1px solid #111111;
+  background: rgba(255, 255, 255, 0.92);
+  text-align: center;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.12);
+}
+
+.signal-glitch-status p {
+  margin: 0;
+  color: #111111;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+}
+
+body.signal-disrupted .terminal {
+  filter: contrast(1.28);
+  animation: terminalJitter 0.1s steps(2, end) infinite;
+}
+
+body.signal-disrupted .connection-lamp {
+  background: #8d8d8d;
+  box-shadow: 0 0 0 5px #eeeeee;
+}
+
+body.signal-disrupted .connection-lamp::after {
+  display: none;
+}
+
+body.signal-disrupted .online-indicator::before {
+  background: #8d8d8d;
+}
+
+@keyframes glitchFlash {
+  0%,
+  100% {
+    opacity: 0.82;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes noiseShift {
+  0% {
+    transform: translate3d(-2%, -1%, 0) scale(1.04);
+  }
+
+  25% {
+    transform: translate3d(2%, 1%, 0) scale(1.02);
+  }
+
+  50% {
+    transform: translate3d(-1%, 2%, 0) scale(1.05);
+  }
+
+  75% {
+    transform: translate3d(1%, -2%, 0) scale(1.03);
+  }
+
+  100% {
+    transform: translate3d(-2%, -1%, 0) scale(1.04);
+  }
+}
+
+@keyframes scanlineMove {
+  from {
+    transform: translateY(-8px);
+  }
+
+  to {
+    transform: translateY(8px);
+  }
+}
+
+@keyframes glitchSlice {
+  0% {
+    transform: translateX(-3%);
+  }
+
+  50% {
+    transform: translateX(4%);
+  }
+
+  100% {
+    transform: translateX(-1%);
+  }
+}
+
+@keyframes hardLine {
+  0% {
+    transform: translateY(-28%);
+  }
+
+  100% {
+    transform: translateY(34%);
+  }
+}
+
+@keyframes glitchBarOne {
+  0% {
+    transform: translateY(-12px) translateX(-3%);
+  }
+
+  50% {
+    transform: translateY(18px) translateX(4%);
+  }
+
+  100% {
+    transform: translateY(-4px) translateX(-1%);
+  }
+}
+
+@keyframes glitchBarTwo {
+  0% {
+    transform: translateY(22px) translateX(3%);
+  }
+
+  100% {
+    transform: translateY(-20px) translateX(-4%);
+  }
+}
+
+@keyframes glitchBarThree {
+  0% {
+    transform: translateY(-18px) translateX(-2%);
+  }
+
+  100% {
+    transform: translateY(24px) translateX(5%);
+  }
+}
+
+@keyframes glitchBarFour {
+  0% {
+    transform: translateY(10px) translateX(4%);
+  }
+
+  100% {
+    transform: translateY(-14px) translateX(-3%);
+  }
+}
+
+@keyframes terminalJitter {
+  0% {
+    transform: translateX(-2px) skewX(-0.25deg);
+  }
+
+  50% {
+    transform: translateX(2px) skewX(0.2deg);
+  }
+
+  100% {
+    transform: translateX(-1px) skewX(-0.1deg);
+  }
+}
 
 body.connection-interrupted .connection-lamp {
   background: #999999;
-
-  box-shadow:
-    0 0 0 5px #eeeeee;
+  box-shadow: 0 0 0 5px #eeeeee;
 }
 
 body.connection-interrupted .connection-lamp::after {
@@ -1461,11 +1353,6 @@ body.connection-interrupted .connection-lamp::after {
 body.connection-interrupted .online-indicator::before {
   background: #999999;
 }
-
-
-/* ========================================
-   タブレット表示
-======================================== */
 
 @media (max-width: 800px) {
   body {
@@ -1511,11 +1398,6 @@ body.connection-interrupted .online-indicator::before {
   }
 }
 
-
-/* ========================================
-   スマートフォン表示
-======================================== */
-
 @media (max-width: 560px) {
   .terminal {
     width: min(100% - 22px, var(--content-width));
@@ -1524,7 +1406,6 @@ body.connection-interrupted .online-indicator::before {
 
   .terminal-header {
     display: block;
-
     padding-bottom: 17px;
   }
 
@@ -1544,7 +1425,6 @@ body.connection-interrupted .online-indicator::before {
 
   .brand-subtitle {
     max-width: 230px;
-
     font-size: 7px;
     line-height: 1.6;
   }
@@ -1566,6 +1446,23 @@ body.connection-interrupted .online-indicator::before {
     font-size: 12px;
   }
 
+  .connection-level-panel {
+    margin-top: 14px;
+    padding: 18px 16px;
+  }
+
+  .connection-level-number {
+    font-size: 19px;
+  }
+
+  .connection-level-information {
+    display: block;
+  }
+
+  .connection-point-text {
+    margin-top: 5px;
+  }
+
   .communication-panel,
   .appointment-panel {
     margin-top: 14px;
@@ -1574,7 +1471,6 @@ body.connection-interrupted .online-indicator::before {
 
   .section-heading {
     align-items: flex-start;
-
     margin-bottom: 17px;
   }
 
@@ -1585,7 +1481,6 @@ body.connection-interrupted .online-indicator::before {
 
   .online-indicator {
     padding: 4px 7px;
-
     font-size: 7px;
   }
 
@@ -1630,7 +1525,6 @@ body.connection-interrupted .online-indicator::before {
 
   .custom-label {
     display: block;
-
     margin-bottom: 9px;
   }
 
@@ -1664,9 +1558,7 @@ body.connection-interrupted .online-indicator::before {
 
   .terminal-footer {
     display: block;
-
     margin-top: 22px;
-
     line-height: 1.9;
   }
 
@@ -1690,15 +1582,13 @@ body.connection-interrupted .online-indicator::before {
   .notification-toast {
     right: 12px;
     bottom: 12px;
-
     width: calc(100% - 24px);
   }
+
+  .signal-glitch-status {
+    bottom: 7%;
+  }
 }
-
-
-/* ========================================
-   動きを抑える設定
-======================================== */
 
 @media (prefers-reduced-motion: reduce) {
   *,
