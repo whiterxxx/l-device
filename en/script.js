@@ -37,22 +37,22 @@ const CONNECTION_LEVELS = [
   },
   {
     level: 3,
-    min: 12,
+    min: 10,
     name: 'SECURE CHANNEL'
   },
   {
     level: 4,
-    min: 24,
+    min: 18,
     name: 'PRIVATE LINK'
   },
   {
     level: 5,
-    min: 40,
+    min: 30,
     name: 'DEDICATED LINE'
   },
   {
     level: 6,
-    min: 65,
+    min: 45,
     name: 'PERMANENT CONNECTION'
   }
 ];
